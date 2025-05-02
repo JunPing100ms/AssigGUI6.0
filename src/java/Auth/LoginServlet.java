@@ -1,5 +1,6 @@
 package Auth;
 
+import Auth.LogError;
 import domain.Admin;
 import domain.Staff;
 import da.StaffDA;
@@ -9,6 +10,8 @@ import da.AdminDA;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
@@ -26,15 +29,13 @@ public class LoginServlet extends HttpServlet {
         String id = request.getParameter("id");
         String password = request.getParameter("pwd");
         String permission = "User";
-        logger = new LogError("login.log");
-        logger.logObject(password);
-        logger.close();
 
         String error = "";
         boolean hasError = false;
         User user = new User();
         // Validate ID
         UserDA userDA = new UserDA();
+        AESEncryptor aesEncryptor = new AESEncryptor();
         if (userDA.searchId(id) || userDA.searchEmail(id)) {
             if (userDA.searchId(id)) {
                 user = userDA.retrieveRecord(id);
@@ -47,10 +48,20 @@ public class LoginServlet extends HttpServlet {
                             user.setFailCount(user.getFailCount() + 1);
                             error += "Password incorect.<br>";
                         }
+                        try {
+                            user.setPwd(aesEncryptor.encrypt(user.getPwd()));
+                        } catch (Exception ex) {
+                            Logger.getLogger(LoginServlet.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                         userDA.updateProfileRecord(user);
                         hasError = true;
                     } else {
                         user.setFailCount(0);
+                        try {
+                            user.setPwd(aesEncryptor.encrypt(user.getPwd()));
+                        } catch (Exception ex) {
+                            Logger.getLogger(LoginServlet.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                         userDA.updateProfileRecord(user);
                     }
                 } else {
@@ -83,13 +94,14 @@ public class LoginServlet extends HttpServlet {
             error += "User ID or Email not exist.<br>";
             hasError = true;
         }
-
+        
+        System.out.println("HERE2");
         if (hasError) {
             // Go back to page
             request.setAttribute("error", error);
             request.setAttribute("id", id);
             request.setAttribute("password", password);
-            request.getRequestDispatcher("Auth/Login.jsp").forward(request, response);
+            request.getRequestDispatcher("Login.jsp").forward(request, response);
         } else {
             //Get permission
             AdminDA adminDA = new AdminDA();
@@ -111,15 +123,20 @@ public class LoginServlet extends HttpServlet {
             //Store cookie, and go to profile page
             Cookie userNameCookie = new Cookie("userName", user.getName());
             userNameCookie.setMaxAge(60 * 60 * 24 * 7);
+            userNameCookie.setPath("/");
             response.addCookie(userNameCookie);
+            
             Cookie userIDCookie = new Cookie("userId", user.getId());
             userIDCookie.setMaxAge(60 * 60 * 24 * 7);
+            userIDCookie.setPath("/");
             response.addCookie(userIDCookie);
+            
             Cookie userPermissionCookie = new Cookie("userPermission", permission);
             userPermissionCookie.setMaxAge(60 * 60 * 24 * 7);
+            userPermissionCookie.setPath("/");
             response.addCookie(userPermissionCookie);
 
-            response.sendRedirect("Auth/Profile.jsp");
+            response.sendRedirect("ProfileServlet");
         }
     }
 }

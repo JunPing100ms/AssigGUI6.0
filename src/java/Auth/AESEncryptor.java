@@ -24,4 +24,16 @@ public class AESEncryptor {
         byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(encryptedBase64));
         return new String(decrypted);
     }
+    public static void main(String[] args) {
+        try {
+            AESEncryptor encryptor = new AESEncryptor();
+            String encrypted = encryptor.encrypt("");
+            System.out.println("Encrypted: " + encrypted);
+            
+            String decrypted = encryptor.decrypt("0GB2KUpM7hw8bpYJaAoK9A==");
+            System.out.println("Decrypted: " + decrypted);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

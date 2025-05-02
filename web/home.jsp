@@ -20,7 +20,7 @@
             </div>
 
             <div>
-                <a class="login-btn" href="Auth/Login.jsp">Login</a>
+                <a class="login-btn" href="Auth">Login</a>
             </div>
         </div>
 

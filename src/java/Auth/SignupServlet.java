@@ -1,7 +1,5 @@
 package Auth;
 
-
-
 import domain.User;
 import da.UserDA;
 import java.io.IOException;
@@ -31,7 +29,7 @@ public class SignupServlet extends HttpServlet {
 
         UserDA userDA = new UserDA();
         User user = userDA.retrieveRecord(id);
-        
+
         // Validate ID
         if (userDA.searchId(id)) {
             error += "Repeated ID.<br>";
@@ -88,12 +86,12 @@ public class SignupServlet extends HttpServlet {
             request.setAttribute("bd", bd);
             request.setAttribute("pwd1", password);
             request.setAttribute("pwd2", confirmPassword);
-            request.getRequestDispatcher("Auth/SignUp.jsp").forward(request, response);
-        } else {
-            //Store sql, store cookie, and go to profile page
-            user = new User(id,username,email,phone,bd,password);
-            userDA.createRecord(user);
-            response.sendRedirect("Auth/Profile.jsp");
+
+            request.getRequestDispatcher("SignupServlet").forward(request, response);
         }
+        //Store sql, store cookie, and go to profile page
+        user = new User(id, username, email, phone, bd, password);
+        userDA.createRecord(user);
+        response.sendRedirect("Login.jsp");
     }
 }
