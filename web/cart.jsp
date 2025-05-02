@@ -29,13 +29,13 @@
         <div class="sidebar">
             <a href="home.jsp"><img src="Images/logohorizon.png" height="90" width ="230" alt="alt" style="padding:0;margin:0;"/></a>
             <a href="home.jsp">Home</a>
-            <a href="order.jsp">Products</a>
+            <a href="products.jsp">Products</a>
             <a href="event.jsp">Events</a>
             <a href="checkout/cart.jsp">Cart</a>
             <a href="checkout/checkout.jsp">Checkout</a>
         </div>
     <div class = "content">
-        <a href="order.jsp"><button>Back</button></a>
+        <a href="products.jsp"><button>Back</button></a>
         <h2>Shopping Cart</h2>
         <%!
             //Retrieve item details from cart database
