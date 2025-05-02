@@ -85,7 +85,7 @@ public class PaymentDA {
         }
 
     }
-    
+
     //Added by Yizhe
     public ResultSet getRecordResultSet() {
         String getRecordStr = "SELECT * FROM " + tableName;
@@ -154,11 +154,11 @@ public class PaymentDA {
 
             Order order = new Order(
                     rs.getString("orderID"),
-                        paymentID,
-                        rs.getString("itemID"),
-                        rs.getInt("quantity"),
-                        rs.getDouble("price"),
-                        rs.getString("orderDate")
+                    paymentID,
+                    rs.getString("itemID"),
+                    rs.getInt("quantity"),
+                    rs.getDouble("price"),
+                    rs.getString("orderDate")
             );
             payment.getOrders().add(order);
         }
@@ -167,4 +167,14 @@ public class PaymentDA {
         return payments;
     }
 
+    public boolean updatePaymentStatus(String paymentID, String paymentMethod) throws SQLException {
+        String updateSQL = "UPDATE Payment SET paymentStatus = 'Paid', paymentMethod = ? WHERE paymentID = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+            stmt.setString(1, paymentMethod);
+            stmt.setString(2, paymentID);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        }
+    }
 }

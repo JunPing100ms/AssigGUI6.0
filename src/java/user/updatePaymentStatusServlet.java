@@ -17,7 +17,7 @@ public class updatePaymentStatusServlet extends HttpServlet {
         String userID = request.getParameter("userID");
 
         PaymentDA paymentDA = new PaymentDA();
-        /*try {
+        try {
             boolean success = paymentDA.updatePaymentStatus(paymentID, paymentMethod);
             if (success) {
                 request.setAttribute("paymentUpdated", true);
@@ -26,6 +26,6 @@ public class updatePaymentStatusServlet extends HttpServlet {
 
         } catch (SQLException e) {
             throw new ServletException("Database error updating payment.", e);
-        }*/
+        }
     }
 }

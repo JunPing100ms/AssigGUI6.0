@@ -62,6 +62,16 @@ public class User implements Serializable {
         this.token_date = token_date;
         this.create_date = create_date;
     }
+    //Special Case
+    public User(String id, String name, String email, String phone, String hbd, String pwd, String permission) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.hbd = hbd;
+        this.pwd = pwd;
+        this.permission = permission;
+    }
 
     // GETTER & SETTER
     public String getId() {

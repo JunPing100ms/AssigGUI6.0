@@ -1,5 +1,10 @@
 package user;
 
+import da.AdminDA;
+import da.StaffDA;
+import da.UserDA;
+import domain.Admin;
+import domain.Staff;
 import domain.User;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -7,37 +12,108 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.servlet.http.HttpSession;
 
 public class addUserServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-                response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-         /*
-        try{
-        
-        userDA usDA = new userDA();
-        //obtain the parameter value from the html form
         String id = request.getParameter("id");
-        String name = request.getParameter("name");      
-        String password = request.getParameter("pass");
-        char gender = request.getParameter("gender").charAt(0);
-        String membership = request.getParameter("membership");
-        
-        User u = new User (id,name,password,gender,membership);
-        usDA.addRecord(u);
-        out.println("<script type='text/javascript'>");
-        out.println("alert('User \"" + id + "\" has been added successfully.');");
-        out.println("window.location = 'addUser.html';");
-        out.println("</script>");
-        } catch (Exception ex){
-            out.println(ex);
+        String username = request.getParameter("name");
+        String email = request.getParameter("email");
+        String phone = request.getParameter("phone");
+        String bd = request.getParameter("bd");
+        String password = request.getParameter("password1");
+        String confirmPassword = request.getParameter("password2");
+        String permission = request.getParameter("permission");
+
+        String error = "";
+        boolean hasError = false;
+
+        UserDA userDA = new UserDA();
+
+        // Validate ID
+        if (userDA.searchId(id)) {
+            error += "Repeated ID.<br>";
+            hasError = true;
         }
-*/
+
+        // Validate email
+        if (userDA.searchEmail(email)) {
+            error += "Email in use.<br>";
+        } else if (!email.matches("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")) {
+            error += "Please enter a valid email address.<br>";
+            hasError = true;
+        }
+
+        // Validate phone number (simple validation)
+        if (userDA.searchPhone(phone)) {
+            error += "Email in use.<br>";
+        } else if (!phone.matches("^\\+60\\d{9,10}$")) {
+            error += "Please enter a valid phone number (+601212341234).<br>";
+            hasError = true;
+        }
+
+        // Validate password 
+        if (password.length() < 8 || !password.matches(".*[0-9].*") || !password.matches(".*[A-Z].*") || !password.matches(".*[a-z].*")) {
+            error += "Password is not secure.<br>";
+            hasError = true;
+            if (!password.matches(".*[A-Z].*")) {
+                error += " - at least 9 characters.<br>";
+            }
+            if (!password.matches(".*[0-9].*")) {
+                error += " - at least one number.<br>";
+            }
+            if (!password.matches(".*[A-Z].*")) {
+                error += " - at least one uppercase letter (A-Z).<br>";
+            }
+            if (!password.matches(".*[a-z].*")) {
+                error += " - at least one lowercase letter (a-z).<br>";
+            }
+        } else {
+            // Validate password match
+            if (!password.equals(confirmPassword)) {
+                error += "Passwords do not match.<br>";
+                hasError = true;
+            }
+        }
+        if (hasError) {
+            // Go back to page
+            HttpSession session = request.getSession();
+            session.setAttribute("error", error);
+            session.setAttribute("id", id);
+            session.setAttribute("name", username);
+            session.setAttribute("email", email);
+            session.setAttribute("phone", phone);
+            session.setAttribute("bd", bd);
+            session.setAttribute("pwd1", password);
+            session.setAttribute("pwd2", confirmPassword);
+            session.setAttribute("permission", permission);
+
+            // Redirect to JSP
+            response.sendRedirect(request.getContextPath() + "/addUser.jsp");
+        } else {
+            //Store sql, store cookie, and go to profile page
+            User user = new User(id, username, email, phone, bd, password);
+            userDA.createRecord(user);
+            //Store Permission
+            if (permission.equals("Admin")) {
+                AdminDA adminDA = new AdminDA();
+                Admin admin = new Admin(id);
+                System.out.println("Id: "+ admin.getUser_id());
+                System.out.println("KEY: "+ admin.getPermission_key());
+                adminDA.createRecord(admin);
+                user.setPermission(admin.getPermission_key());
+                userDA.updateProfileRecord(user);
+            } else if (permission.equals("Staff")) {
+                StaffDA staffDA = new StaffDA();
+                Staff staff = new Staff(id);
+                staffDA.createRecord(staff);
+                user.setPermission(staff.getPermission_key());
+                userDA.updateProfileRecord(user);
+            }
+            response.sendRedirect("viewUserServlet");
+        }
     }
 }
